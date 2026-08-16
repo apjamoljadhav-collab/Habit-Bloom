@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6c5ce7">
+<title>Habit Bloom</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{--bg:#f6f4ff;--card:#fff;--text:#242239;--muted:#7d7890;--p:#6c5ce7;--p2:#8d7ff0;--green:#27ae7b;--line:#ebe8f3;--danger:#c43d55}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#f8f7ff,#effbf7);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;padding:16px}
+.app{max-width:760px;margin:auto}.header{display:flex;justify-content:space-between;align-items:center;padding:10px 3px 20px}.brand{display:flex;gap:11px;align-items:center}.logo{width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,var(--p),var(--p2));display:grid;place-items:center;color:white;font-size:24px;box-shadow:0 10px 25px #6c5ce733}h1{margin:0;font-size:27px;letter-spacing:-.7px}.sub,.muted{color:var(--muted);font-size:12px}.date{text-align:right;color:var(--muted);font-size:12px}
+.card{background:#ffffffdf;border:1px solid #fff;border-radius:23px;padding:18px;margin-bottom:14px;box-shadow:0 15px 45px #51488712;backdrop-filter:blur(12px)}
+.title{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}.title strong{font-size:14px}.add{display:grid;grid-template-columns:1fr auto;gap:9px}input,select{border:1px solid #dedbea;border-radius:13px;padding:13px 14px;font:inherit;background:white;color:var(--text);outline:none}input:focus,select:focus{border-color:var(--p);box-shadow:0 0 0 4px #6c5ce714}button{border:0;border-radius:13px;padding:12px 15px;font:inherit;font-weight:750;cursor:pointer}.primary{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff}.soft{background:#f0eefb;color:#5549c5}.danger{background:#fff0f2;color:var(--danger)}
+.habit{border:1px solid var(--line);border-radius:19px;padding:15px;margin-bottom:10px;background:#fff}.habit:last-child{margin-bottom:0}.habitTop{display:flex;align-items:center;gap:11px}.icon{width:43px;height:43px;border-radius:14px;background:#f0edff;display:grid;place-items:center;font-size:20px}.name{font-weight:800;flex:1}.since{font-size:10px;color:var(--muted);margin-top:3px}.check{width:43px;height:43px;border-radius:14px;background:#faf9ff;border:1px solid #dedbea;display:grid;place-items:center;font-size:21px;cursor:pointer}.check.done{background:linear-gradient(135deg,#38bd8b,#27ae7b);color:#fff;border-color:#27ae7b}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:14px}.stat{background:#f8f7fc;border-radius:12px;text-align:center;padding:9px 4px}.num{font-size:17px;font-weight:850}.lab{font-size:8px;color:var(--muted);margin-top:2px}.week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:13px}.day{text-align:center;font-size:9px;color:var(--muted)}.dot{margin-top:4px;height:27px;border-radius:8px;background:#f1eff7;display:grid;place-items:center;color:#aaa}.dot.done{background:#ccefe1;color:#157956}.dot.today{outline:2px solid var(--p);outline-offset:1px}.actions{text-align:right;margin-top:8px}.tiny{padding:7px 9px;font-size:10px;background:#f5f3fa;color:#716c80}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:13px}.tab{background:#f1eff8;color:#6c6680}.tab.active{background:var(--p);color:#fff}
+.reportControls{display:flex;gap:8px;margin-bottom:14px}.reportControls>*{flex:1}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:15px}.summary .stat{padding:13px 5px}.chartWrap{height:290px;position:relative}.monthGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.calHead{text-align:center;color:var(--muted);font-size:9px;padding-bottom:3px}.calDay{min-height:37px;border-radius:9px;background:#f5f3f9;padding:5px;font-size:10px}.calDay.done{background:#ccefe1;color:#126e50;font-weight:800}.calDay.today{outline:2px solid var(--p)}.legend{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:10px;margin-top:10px}
+.empty{text-align:center;padding:28px 10px;color:var(--muted)}.empty span{font-size:32px;display:block;margin-bottom:7px}
+@media(max-width:500px){body{padding:11px}.add{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.reportControls{flex-direction:column}.summary{grid-template-columns:1fr 1fr}.summary .stat:last-child{grid-column:span 2}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="header">
+<div class="brand"><div class="logo">🌱</div><div><h1>Habit Bloom</h1><div class="sub">Small actions. Stronger days.</div></div></div>
+<div class="date" id="today"></div>
+</header>
+
+<section class="card">
+<div class="title"><strong>Add a habit</strong><span class="muted">Daily</span></div>
+<div class="add"><input id="newHabit" placeholder="e.g. Yoga, Read, Study…"><button class="primary" onclick="addHabit()">＋ Add</button></div>
+</section>
+
+<section class="card">
+<div class="title"><strong>Today's habits</strong><span class="muted" id="todayProgress"></span></div>
+<div id="habitList"></div>
+</section>
+
+<section class="card">
+<div class="tabs">
+<button class="tab active" data-tab="month">Monthly</button>
+<button class="tab" data-tab="year">Yearly</button>
+<button class="tab" data-tab="calendar">Calendar</button>
+</div>
+
+<div id="monthView">
+<div class="reportControls"><select id="monthSelect"></select><select id="habitSelect"></select></div>
+<div class="summary"><div class="stat"><div class="num" id="mDone">0</div><div class="lab">COMPLETED DAYS</div></div><div class="stat"><div class="num" id="mRate">0%</div><div class="lab">COMPLETION</div></div><div class="stat"><div class="num" id="mBest">0</div><div class="lab">BEST STREAK</div></div></div>
+<div class="chartWrap"><canvas id="monthChart"></canvas></div>
+</div>
+
+<div id="yearView" style="display:none">
+<div class="reportControls"><select id="yearSelect"></select><select id="yearHabitSelect"></select></div>
+<div class="summary"><div class="stat"><div class="num" id="yDone">0</div><div class="lab">COMPLETED DAYS</div></div><div class="stat"><div class="num" id="yRate">0%</div><div class="lab">YEAR COMPLETION</div></div><div class="stat"><div class="num" id="yBest">0</div><div class="lab">BEST STREAK</div></div></div>
+<div class="chartWrap"><canvas id="yearChart"></canvas></div>
+</div>
+
+<div id="calendarView" style="display:none">
+<div class="reportControls"><select id="calMonth"></select><select id="calHabit"></select></div>
+<div id="calendar"></div>
+<div class="legend">🟩 Completed &nbsp; ◻ Not completed &nbsp; 🟣 Today</div>
+</div>
+</section>
+</div>
+
+<script>
+const KEY='habitBloomFullV1';let habits=JSON.parse(localStorage.getItem(KEY)||'[]');let monthChart,yearChart;
+const $=id=>document.getElementById(id), todayKey=()=>{let d=new Date();return key(d)};
+function key(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function save(){localStorage.setItem(KEY,JSON.stringify(habits))}
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function addHabit(){let n=$('newHabit').value.trim();if(!n)return;habits.unshift({id:Date.now().toString(36),name:n,created:todayKey(),done:[]});$('newHabit').value='';save();renderAll()}
+function toggle(id){let h=habits.find(x=>x.id===id),k=todayKey(),i=h.done.indexOf(k);i>=0?h.done.splice(i,1):h.done.push(k);save();renderAll()}
+function removeHabit(id){if(confirm('Delete this habit and its history?')){habits=habits.filter(h=>h.id!==id);save();renderAll()}}
+function streak(h){let set=new Set(h.done),cur=0,d=new Date();while(set.has(key(d))){cur++;d.setDate(d.getDate()-1)}let best=0,run=0,last=null;[...set].sort().forEach(k=>{if(last&&((new Date(k)-new Date(last))/86400000)===1)run++;else run=1;best=Math.max(best,run);last=k});return [cur,best]}
+function week(h){let out='';for(let i=6;i>=0;i--){let d=new Date();d.setDate(d.getDate()-i),k=key(d);out+=`<div class="day">${d.toLocaleDateString([],{weekday:'narrow'})}<div class="dot ${h.done.includes(k)?'done':''} ${i===0?'today':''}">${d.getDate()}</div></div>`}return out}
+function renderHabits(){let done=habits.filter(h=>h.done.includes(todayKey())).length;$('todayProgress').textContent=habits.length?`${done}/${habits.length} completed`:'Start today';if(!habits.length){$('habitList').innerHTML='<div class="empty"><span>🌱</span>Add your first habit.</div>';return}let icons=['🌱','📚','🧘','💧','🏃','💪','🧠','✍️'];$('habitList').innerHTML=habits.map((h,i)=>{let [cur,best]=streak(h),total=h.done.length;let elapsed=Math.max(1,Math.floor((Date.now()-new Date(h.created+'T12:00:00'))/86400000)+1);return `<div class="habit"><div class="habitTop"><div class="icon">${icons[i%icons.length]}</div><div><div class="name">${esc(h.name)}</div><div class="since">Since ${new Date(h.created+'T12:00:00').toLocaleDateString([],{day:'numeric',month:'short',year:'numeric'})}</div></div><div class="check ${h.done.includes(todayKey())?'done':''}" onclick="toggle('${h.id}')">${h.done.includes(todayKey())?'✓':'○'}</div></div><div class="week">${week(h)}</div><div class="stats"><div class="stat"><div class="num">${total}</div><div class="lab">TOTAL DAYS</div></div><div class="stat"><div class="num">${cur}</div><div class="lab">CURRENT STREAK</div></div><div class="stat"><div class="num">${best}</div><div class="lab">BEST STREAK</div></div><div class="stat"><div class="num">${Math.round(total/elapsed*100)}%</div><div class="lab">COMPLETION</div></div></div><div class="actions"><button class="tiny" onclick="removeHabit('${h.id}')">Delete</button></div></div>`}).join('')}
+function fillSelects(){let now=new Date(),months=[];for(let i=0;i<12;i++){let d=new Date(now.getFullYear(),i,1);months.push([i+1,d.toLocaleDateString([],{month:'long',year:'numeric'})])}let ms=$('monthSelect'),cm=$('calMonth');ms.innerHTML=months.map(x=>`<option value="${x[0]}">${x[1]}</option>`).join('');cm.innerHTML=ms.innerHTML;ms.value=now.getMonth()+1;cm.value=now.getMonth()+1;let ys=[];for(let y=now.getFullYear()-4;y<=now.getFullYear();y++)ys.push(y);$('yearSelect').innerHTML=ys.map(y=>`<option>${y}</option>`).join('');$('yearSelect').value=now.getFullYear();let opts='<option value="all">All habits</option>'+habits.map(h=>`<option value="${h.id}">${esc(h.name)}</option>`).join('');['habitSelect','yearHabitSelect','calHabit'].forEach(id=>$(id).innerHTML=opts)}
+function selected(id){let v=$(id).value;return v==='all'?habits:habits.filter(h=>h.id===v)}
+function monthData(){let m=+$('monthSelect').value,y=new Date().getFullYear(),hs=selected('habitSelect'),days=new Date(y,m,0).getDate(),vals=[];for(let d=1;d<=days;d++){let k=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;vals.push(hs.reduce((n,h)=>n+(h.done.includes(k)?1:0),0))}return {vals,days,hs}}
+function renderMonth(){let {vals,days,hs}=monthData(),possible=days*hs.length,done=vals.reduce((a,b)=>a+b,0);$('mDone').textContent=done;$('mRate').textContent=possible?Math.round(done/possible*100)+'%':'0%';$('mBest').textContent=Math.max(0,...hs.map(h=>streak(h)[1]));if(monthChart)monthChart.destroy();monthChart=new Chart($('monthChart'),{type:'bar',data:{labels:Array.from({length:days},(_,i)=>i+1),datasets:[{data:vals,borderRadius:6,backgroundColor:'#8d7ff0'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},title:{display:true,text:'Day'}},y:{beginAtZero:true,ticks:{stepSize:1}}}}})}
+function renderYear(){let y=+$('yearSelect').value,hs=selected('yearHabitSelect'),vals=[];for(let m=1;m<=12;m++){let days=new Date(y,m,0).getDate();let n=0;hs.forEach(h=>{for(let d=1;d<=days;d++)if(h.done.includes(`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`))n++});vals.push(n)}let done=vals.reduce((a,b)=>a+b,0),possible=hs.length*([31,28+(y%4===0&&y%100!==0||y%400===0?1:0),31,30,31,30,31,31,30,31,30,31].reduce((a,b)=>a+b,0));$('yDone').textContent=done;$('yRate').textContent=possible?Math.round(done/possible*100)+'%':'0%';$('yBest').textContent=Math.max(0,...hs.map(h=>streak(h)[1]));if(yearChart)yearChart.destroy();yearChart=new Chart($('yearChart'),{type:'bar',data:{labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],datasets:[{label:'Completed days',data:vals,borderRadius:8,backgroundColor:'#6c5ce7'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,ticks:{stepSize:1}}}}})}
+function renderCalendar(){let m=+$('calMonth').value,y=new Date().getFullYear(),hs=selected('calHabit'),first=new Date(y,m-1,1).getDay(),days=new Date(y,m,0).getDate(),s='<div class="monthGrid">'+['S','M','T','W','T','F','S'].map(x=>`<div class="calHead">${x}</div>`).join('');for(let i=0;i<first;i++)s+='<div></div>';for(let d=1;d<=days;d++){let k=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`,done=hs.length&&hs.every(h=>h.done.includes(k));s+=`<div class="calDay ${done?'done':''} ${k===todayKey()?'today':''}">${d}${done?' ✓':''}</div>`}$('calendar').innerHTML=s+'</div>'}
+function renderAll(){fillSelects();renderHabits();renderMonth();renderYear();renderCalendar();$('today').textContent=new Date().toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'})}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');['monthView','yearView','calendarView'].forEach(x=>$(x).style.display='none');$(b.dataset.tab+'View').style.display='block';if(b.dataset.tab==='month')renderMonth();if(b.dataset.tab==='year')renderYear();if(b.dataset.tab==='calendar')renderCalendar()});
+['monthSelect','habitSelect','yearSelect','yearHabitSelect','calMonth','calHabit'].forEach(id=>$(id).addEventListener('change',()=>{if(id.includes('month')||id==='habitSelect')renderMonth();if(id.includes('year'))renderYear();if(id.includes('cal'))renderCalendar()}));
+$('newHabit').addEventListener('keydown',e=>{if(e.key==='Enter')addHabit()});renderAll();
+</script>
+</body>
+</html>
